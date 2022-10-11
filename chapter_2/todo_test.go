@@ -2,6 +2,7 @@ package todo_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 	"todo"
 )
@@ -109,6 +110,38 @@ func TestDelete(t *testing.T) {
 	}
 	if (l.CheckItemId(addedTask0.Id) == nil) || (l.CheckItemId(addedTask2.Id) == nil) {
 		t.Errorf("Expected item to not be in list, but it was found")
+	}
+}
+
+func TestSaveGet(t *testing.T) {
+	l1 := todo.List{}
+	l2 := todo.List{}
+
+	taskName := "Test 4: Test Task"
+	addedTask := l1.Add(taskName)
+
+	if addedTask.Task != taskName {
+		t.Errorf("Expected %q, got %q instead", taskName, addedTask.Task)
+	}
+
+	tempFile, err := os.CreateTemp("", "")
+
+	if err != nil {
+		t.Fatalf("Error creating temp file: %s", err)
+	}
+
+	defer os.Remove(tempFile.Name())
+
+	if err := l1.Save(tempFile.Name()); err != nil {
+		t.Fatalf("Error saving list to file: %s", err)
+	}
+
+	if err := l2.Get(tempFile.Name()); err != nil {
+		t.Fatalf("Error getting list from file: %s", err)
+	}
+
+	if l1[0].Task != l2[0].Task {
+		t.Errorf("Task %q should match %q task", l1[0].Task, l2[0].Task)
 	}
 }
 
