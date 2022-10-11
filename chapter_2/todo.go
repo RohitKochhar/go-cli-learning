@@ -8,6 +8,9 @@ import (
 	"time"
 )
 
+// ToDos:
+// - Create a method to check if the item is in the list
+
 // item type is represents a todolist item
 //
 // # Attributes
@@ -49,7 +52,7 @@ type List []item
 // Outputs:
 //
 // - None
-func (l *List) Add(task string) {
+func (l *List) Add(task string) item {
 	new_task := item{
 		Id:          len(*l),
 		Task:        task,
@@ -58,6 +61,8 @@ func (l *List) Add(task string) {
 		CompletedAt: time.Time{},
 	}
 	*l = append(*l, new_task)
+
+	return new_task
 }
 
 // Complete Description:
@@ -74,7 +79,7 @@ func (l *List) Add(task string) {
 // - error (fmt.Errorf | nil): error if ID is OOB, else nil
 func (l *List) Complete(id int) error {
 	ls := *l
-	if id <= 0 || id > len(ls) {
+	if id < 0 || id > len(ls) {
 		return fmt.Errorf("item %d does not exist", id)
 	}
 	ls[id].Done = true
@@ -97,11 +102,11 @@ func (l *List) Complete(id int) error {
 func (l *List) Delete(id int) error {
 	// Dereference pointer to mutate object
 	ls := *l
-	if id <= 0 || id > len(ls) {
+	if id < 0 || id > len(ls) {
 		return fmt.Errorf("item %d does not exist", id)
 	}
 	// Remove id from list by taking all entries before and after
-	*l = append(ls[:id], ls[id+1])
+	*l = append(ls[:id], ls[id+1:]...)
 	return nil
 }
 
