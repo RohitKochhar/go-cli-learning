@@ -97,7 +97,9 @@ func (l *List) Add(task string) item {
 // - error (fmt.Errorf | nil): error if ID is OOB, else nil
 func (l *List) Complete(id int) error {
 	ls := *l
-	ls.CheckItemId(id)
+	if ls.CheckItemId(id) != nil {
+		return fmt.Errorf("could not find item with Id=%d in list", id)
+	}
 	ls[id].Done = true
 	ls[id].CompletedAt = time.Now()
 
@@ -118,9 +120,17 @@ func (l *List) Complete(id int) error {
 func (l *List) Delete(id int) error {
 	// Dereference pointer to mutate object
 	ls := *l
-	ls.CheckItemId(id)
-	// Remove id from list by taking all entries before and after
-	*l = append(ls[:id], ls[id+1:]...)
+	if ls.CheckItemId(id) != nil {
+		return fmt.Errorf("could not find item with Id=%d in list", id)
+	}
+	// Go through the list and delete the item with matching ID
+	var newList []item
+	for idx := 0; idx < len(ls); idx++ {
+		if ls[idx].Id != id {
+			newList = append(newList, ls[idx])
+		}
+	}
+	*l = newList
 	return nil
 }
 
@@ -174,4 +184,13 @@ func (l *List) Get(filename string) error {
 	}
 	// If the file is found and is not empty, unmarshal it
 	return json.Unmarshal(file, l)
+}
+
+// Print Description outputs list in human-readable form
+func (l *List) Print() {
+	ls := *l
+	fmt.Println("ToDo list:")
+	for idx := 0; idx < len(ls); idx++ {
+		fmt.Printf("\tTask ID: %d, Task Name: %s, Done: %t\n", ls[idx].Id, ls[idx].Task, ls[idx].Done)
+	}
 }
