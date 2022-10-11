@@ -8,9 +8,6 @@ import (
 	"time"
 )
 
-// ToDos:
-// - Create a method to check if the item is in the list
-
 // item type is represents a todolist item
 //
 // # Attributes
@@ -40,6 +37,27 @@ type item struct {
 // This class ensures all objects within the list are of type
 // item, preventing runtime errors due to unexpected types
 type List []item
+
+// CheckItemId Description
+//
+// - Checks if item in list exists with specified id
+//
+// Inputs:
+//
+// - Id (int): id of task to be found
+//
+// Outputs:
+//
+// - error (err|nil): err if task not found, nil else
+func (l *List) CheckItemId(id int) error {
+	ls := *l
+	for idx := 0; idx < len(*l); idx++ {
+		if ls[idx].Id == id {
+			return nil
+		}
+	}
+	return fmt.Errorf("could not find item with Id=%d in list", id)
+}
 
 // Add Description:
 //
@@ -79,9 +97,7 @@ func (l *List) Add(task string) item {
 // - error (fmt.Errorf | nil): error if ID is OOB, else nil
 func (l *List) Complete(id int) error {
 	ls := *l
-	if id < 0 || id > len(ls) {
-		return fmt.Errorf("item %d does not exist", id)
-	}
+	ls.CheckItemId(id)
 	ls[id].Done = true
 	ls[id].CompletedAt = time.Now()
 
@@ -102,9 +118,7 @@ func (l *List) Complete(id int) error {
 func (l *List) Delete(id int) error {
 	// Dereference pointer to mutate object
 	ls := *l
-	if id < 0 || id > len(ls) {
-		return fmt.Errorf("item %d does not exist", id)
-	}
+	ls.CheckItemId(id)
 	// Remove id from list by taking all entries before and after
 	*l = append(ls[:id], ls[id+1:]...)
 	return nil

@@ -12,9 +12,13 @@ import (
 func TestAdd(t *testing.T) {
 	l := todo.List{}
 	taskName := "Test #1: Test Add method"
-	l.Add(taskName)
-	if l[0].Task != taskName {
-		t.Errorf("Expected %q, got %q instead", taskName, l[0].Task)
+	addedTask := l.Add(taskName)
+	if addedTask.Task != taskName {
+		t.Errorf("Expected %q, got %q instead", taskName, addedTask.Task)
+	}
+	// Check that the item can be found in the list
+	if l.CheckItemId(addedTask.Id) != nil {
+		t.Errorf("Expected item to be in list, but it was not found")
 	}
 }
 
@@ -31,6 +35,10 @@ func TestComplete(t *testing.T) {
 	// Check that the ID was set correctly
 	if addedTask.Id != 0 {
 		t.Errorf("Expected task.Id to be 0, got %d instead", addedTask.Id)
+	}
+	// Check that the item can be found in the list
+	if l.CheckItemId(addedTask.Id) != nil {
+		t.Errorf("Expected item to be in list, but it was not found")
 	}
 	// Ensure task.Done is false
 	if addedTask.Done {
@@ -72,7 +80,9 @@ func TestDelete(t *testing.T) {
 	if preDeletionLength == postDeletionLength {
 		t.Errorf("Expected len(l) to be %d, instead got %d", preDeletionLength-1, postDeletionLength)
 	}
-
+	if l.CheckItemId(addedTask.Id) == nil {
+		t.Errorf("Expected item to not be in list, but it was found")
+	}
 }
 
 // Examples
