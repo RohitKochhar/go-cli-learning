@@ -1,13 +1,15 @@
 package todo
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 )
 
 // item type is represents a todolist item
 //
-// Attributes
+// # Attributes
 //
 // - Id (int): Task ID for accessing
 //
@@ -35,7 +37,7 @@ type item struct {
 // item, preventing runtime errors due to unexpected types
 type List []item
 
-// Description:
+// Add Description:
 //
 // - Creates a new todo item and appends it to the list
 //
@@ -57,7 +59,7 @@ func (l *List) Add(task string) {
 	*l = append(*l, new_task)
 }
 
-// Description:
+// Complete Description:
 //
 // - Marks a todo item as completed by setting Done = True
 // and CompletedAt as the current time
@@ -72,10 +74,45 @@ func (l *List) Add(task string) {
 func (l *List) Complete(id int) error {
 	ls := *l
 	if id <= 0 || id > len(ls) {
-		return fmt.Errorf("Item %d does not exist", id)
+		return fmt.Errorf("item %d does not exist", id)
 	}
 	ls[id].Done = true
 	ls[id].CompletedAt = time.Now()
 
 	return nil
+}
+
+// Delete Description
+//
+// - Deletes a ToDo item from the list
+//
+// Inputs:
+//
+// - id (int): ID of task to be deleted from list
+//
+// # Outputs
+//
+// - error (fmt.Errorf | nil): Error if ID is OOB, else nil
+func (l *List) Delete(id int) error {
+	// Dereference pointer to mutate object
+	ls := *l
+	if id <= 0 || id > len(ls) {
+		return fmt.Errorf("item %d does not exist", id)
+	}
+	// Remove id from list by taking all entries before and after
+	*l = append(ls[:id], ls[id+1])
+	return nil
+}
+
+// Save Description
+//
+// - Uses the json.Marshal function to encode l into JSON
+//
+// - If json encoding is successful, writes to file specified in args
+func (l *List) Save(filename string) error {
+	js, err := json.Marshal(l)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(filename, js, 0644)
 }
