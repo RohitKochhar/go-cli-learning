@@ -2,6 +2,7 @@ package todo
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -109,10 +110,49 @@ func (l *List) Delete(id int) error {
 // - Uses the json.Marshal function to encode l into JSON
 //
 // - If json encoding is successful, writes to file specified in args
+//
+// Inputs:
+//
+// - filename (string): Name of file to be written to
+//
+// Outputs:
+//
+// - error (err|nil): Throws error if there is a problem marshalling item
 func (l *List) Save(filename string) error {
 	js, err := json.Marshal(l)
 	if err != nil {
 		return err
 	}
 	return os.WriteFile(filename, js, 0644)
+}
+
+// Get Description
+//
+// - Opens the provided file name, decodes the JSON data and turns into a list
+//
+// - Performs the inverse function of the Save method
+//
+// Inputs:
+//
+// - filename (string): Name of the file to get list from
+//
+// # Outputs
+//
+// - result (err|nil|object): Returns error if file is not found, else returns object
+func (l *List) Get(filename string) error {
+	// Try opening the file for reading
+	file, err := os.ReadFile(filename)
+	// If the error exists, check what error
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			// If the file doesn't exist, just return a blank object (nil)
+			return nil
+		}
+	}
+	// If the file is found but has nothing in it, just return nil
+	if len(file) == 0 {
+		return nil
+	}
+	// If the file is found and is not empty, unmarshal it
+	return json.Unmarshal(file, l)
 }
