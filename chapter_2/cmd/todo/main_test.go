@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"testing"
 )
 
@@ -54,19 +53,31 @@ func TestTodoCLI(t *testing.T) {
 	cmdPath := filepath.Join(dir, binName)
 	// First test to check a new task can be added using CLI
 	t.Run("AddNewTask", func(t *testing.T) {
-		cmd := exec.Command(cmdPath, strings.Split(task, " ")...)
+		cmd := exec.Command(cmdPath, "-task", task)
 		if err := cmd.Run(); err != nil {
 			t.Fatal(err)
 		}
 	})
 	// Second test to esnure the tool can list the tasks
 	t.Run("ListTasks", func(t *testing.T) {
-		cmd := exec.Command(cmdPath)
+		cmd := exec.Command(cmdPath, "-list")
 		out, err := cmd.CombinedOutput()
 		if err != nil {
 			t.Fatal(err)
 		}
 		expected := fmt.Sprintf("ToDo list:\n\tTask ID: 0, Task Name: %s, Done: false\n", task)
+		if expected != string(out) {
+			t.Errorf("Expected %q, got %q instead\n", expected, string(out))
+		}
+	})
+	// Third test to ensure complete cli call works
+	t.Run("CompleteTask", func(t *testing.T) {
+		cmd := exec.Command(cmdPath, "-complete", "0")
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			t.Fatal(err)
+		}
+		expected := fmt.Sprintf("Successfully marked task 0 as complete\nSuccessfully saved updated list\nToDo list:\n\tTask ID: 0, Task Name: %s, Done: true\n", task)
 		if expected != string(out) {
 			t.Errorf("Expected %q, got %q instead\n", expected, string(out))
 		}

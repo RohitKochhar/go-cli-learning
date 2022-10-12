@@ -1,9 +1,9 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
-	"strings"
 	"todo"
 )
 
@@ -11,6 +11,13 @@ import (
 const todoFileName = ".todo.json"
 
 func main() {
+	// Parsing command line flags
+	task := flag.String("task", "", "Task name to be included in the ToDo list")
+	list := flag.Bool("list", false, "List all tasks")
+	complete := flag.Int("complete", -1, "ID of task to be completed")
+	flag.Parse()
+
+	// Create an item list
 	l := &todo.List{}
 
 	// Check for non-empty file
@@ -21,22 +28,40 @@ func main() {
 
 	// Decide how to handle given args
 	switch {
-	// If no args, print the todo list
-	case len(os.Args) == 1:
+	case *list:
 		l.Print()
-	default:
-		// By default, if an arg is given, we assume it is a string
-		// 	representing the task name
-		newTaskName := strings.Join(os.Args[1:], " ")
-		// Add the new task to the list
-		l.Add(newTaskName)
-		// Save the list to the file
+	case *complete >= 0:
+		// Complete the specified item
+		if err := l.Complete(*complete); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		} else {
+			fmt.Printf("Successfully marked task %d as complete\n", *complete)
+		}
+		// Save the new list
 		if err := l.Save(todoFileName); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
+		} else {
+			fmt.Printf("Successfully saved updated list\n")
+			l.Print()
 		}
-		fmt.Printf("New task %s saved successfully\n", newTaskName)
-		l.Print()
+	// Check the default task string was fixed
+	case *task != "":
+		// Add the task
+		l.Add(*task)
+		// Save the new list
+		if err := l.Save(todoFileName); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		} else {
+			fmt.Printf("Successfully added new task %s\n", *task)
+			l.Print()
+		}
 
+	default:
+		// Invalid flag provided
+		fmt.Fprintln(os.Stderr, "Invalid Option Provided")
+		os.Exit(1)
 	}
 }
