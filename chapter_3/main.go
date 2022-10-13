@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
+	"runtime"
+	"time"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday/v2"
@@ -46,6 +49,7 @@ func main() {
 	}
 	// Parse flags
 	filename := flag.String("file", "", "Markdown file to preview")
+	skipPreview := flag.Bool("skipPreview", false, "Create HTML file without preview in browser")
 	// help := flag.Bool("help", false, "Displays this message")
 	flag.Parse()
 
@@ -55,14 +59,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := run(*filename, os.Stdout); err != nil {
+	if err := run(*filename, os.Stdout, *skipPreview); err != nil {
 		// Try to run the program without error
 		os.Exit(1)
 	}
 }
 
 // run coordinates the execution of the remaining functions
-func run(filename string, out io.Writer) error {
+func run(filename string, out io.Writer, skipPreview bool) error {
 	// Parse the input file for any errors
 	input, err := os.ReadFile(filename)
 	if err != nil {
@@ -85,7 +89,17 @@ func run(filename string, out io.Writer) error {
 	// Print the outName to stdout for clarity and testing
 	fmt.Fprintln(out, outName)
 
-	return saveHTML(outName, htmlData)
+	if err := saveHTML(outName, htmlData); err != nil {
+		return err
+	}
+	if skipPreview {
+		return nil
+	}
+
+	// Once the run function is done, remove the tempFile
+	defer os.Remove(outName)
+
+	return preview(outName)
 }
 
 // parseContent goes through the MD input and converts to HTML
@@ -110,4 +124,34 @@ func parseContent(input []byte) []byte {
 // saveHTML saves the content created by parseContent into an html file
 func saveHTML(filename string, data []byte) error {
 	return os.WriteFile(filename, data, 0644)
+}
+
+// preview takes the tempfile name and tries to open it in the browser
+func preview(fname string) error {
+	cName := ""
+	cParams := []string{}
+	// Define the executable based on OS
+	switch runtime.GOOS {
+	case "linux":
+		cName = "xdg-open"
+	case "windows":
+		cName = "cmd.exe"
+		cParams = []string{"/C", "start"}
+	case "darwin":
+		cName = "open"
+	default:
+		return fmt.Errorf("OS not supported")
+	}
+	// Add the file name to cParams so it is handed to the final command
+	cParams = append(cParams, fname)
+	// Ensure that the path will be a valid input to the preview cmd
+	cPath, err := exec.LookPath(cName)
+	if err != nil {
+		return err
+	}
+	err = exec.Command(cPath, cParams...).Run()
+
+	// Give the browser time to open the file to prevent a race condition
+	time.Sleep(2 * time.Second)
+	return err
 }

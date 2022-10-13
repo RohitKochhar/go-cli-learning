@@ -41,7 +41,7 @@ func TestRun(t *testing.T) {
 	// Create a mock stdout pipe for testing
 	var mockStdOut bytes.Buffer
 
-	if err := run(inputFile, &mockStdOut); err != nil {
+	if err := run(inputFile, &mockStdOut, true); err != nil {
 		t.Fatal(err)
 	}
 
@@ -71,7 +71,7 @@ func TestShaHash(t *testing.T) {
 	// Create a mock stdout pipe for testing
 	var mockStdOut bytes.Buffer
 
-	if err := run(inputFile, &mockStdOut); err != nil {
+	if err := run(inputFile, &mockStdOut, true); err != nil {
 		t.Fatal(err)
 	}
 
