@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -19,7 +18,7 @@ const (
 
 // TestParseContent checks the bytes are equal between two the result of parse and golden file
 func TestParseContent(t *testing.T) {
-	input, err := ioutil.ReadFile(inputFile)
+	input, err := os.ReadFile(inputFile)
 	if err != nil {
 		t.Fatal(err)
 	}
