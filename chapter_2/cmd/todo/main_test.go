@@ -2,6 +2,7 @@ package main_test
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -11,7 +12,7 @@ import (
 
 var (
 	binName  = "todo"
-	fileName = ".todo.json"
+	fileName = os.Getenv("TODO_FILENAME")
 )
 
 func TestMain(m *testing.M) {
@@ -53,7 +54,7 @@ func TestTodoCLI(t *testing.T) {
 	cmdPath := filepath.Join(dir, binName)
 	// First test to check a new task can be added using CLI
 	t.Run("AddNewTask", func(t *testing.T) {
-		cmd := exec.Command(cmdPath, "-task", task)
+		cmd := exec.Command(cmdPath, "-add", task)
 		if err := cmd.Run(); err != nil {
 			t.Fatal(err)
 		}
@@ -67,7 +68,7 @@ func TestTodoCLI(t *testing.T) {
 		}
 		expected := fmt.Sprintf("ToDo list:\n\tTask ID: 0, Task Name: %s, Done: false\n", task)
 		if expected != string(out) {
-			t.Errorf("Expected %q, got %q instead\n", expected, string(out))
+			t.Errorf("Expected:\n\t%q\n Got:\n\t%q\n", expected, string(out))
 		}
 	})
 	// Third test to ensure complete cli call works
@@ -79,7 +80,35 @@ func TestTodoCLI(t *testing.T) {
 		}
 		expected := fmt.Sprintf("Successfully marked task 0 as complete\nSuccessfully saved updated list\nToDo list:\n\tTask ID: 0, Task Name: %s, Done: true\n", task)
 		if expected != string(out) {
-			t.Errorf("Expected %q, got %q instead\n", expected, string(out))
+			t.Errorf("Expected:\n\t%q\n Got:\n\t%q\n", expected, string(out))
 		}
 	})
+	// Fifth test to ensure that we can delete tasks
+	t.Run("DeleteTask", func(t *testing.T) {
+		cmd := exec.Command(cmdPath, "-delete", "0")
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			t.Fatal(err)
+		}
+		expected := "Successfully deleted task 0\nSuccessfully saved updated list\nToDo list:\n"
+		if expected != string(out) {
+			t.Errorf("Expected:\n\t%q\n Got:\n\t%q\n", expected, string(out))
+		}
+	})
+	// Fourth test to ensure we can add tasks from stdin
+	t.Run("AddNewTaskFromSTDIN", func(t *testing.T) {
+		task2 := "Some input from STDIN"
+		cmd := exec.Command(cmdPath, "-add")
+		cmdStdIn, err := cmd.StdinPipe()
+		if err != nil {
+			t.Fatal(err)
+		}
+		io.WriteString(cmdStdIn, task2)
+		cmdStdIn.Close()
+
+		if err := cmd.Run(); err != nil {
+			t.Fatal(err)
+		}
+	})
+
 }
