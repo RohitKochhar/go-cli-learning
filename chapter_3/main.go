@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"io"
 	"os"
-	"path/filepath"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday/v2"
@@ -52,17 +52,17 @@ func main() {
 	if *filename == "" {
 		// If no flag is provided, pass a help message
 		flag.Usage()
+		os.Exit(1)
 	}
 
-	if err := run(*filename); err != nil {
+	if err := run(*filename, os.Stdout); err != nil {
 		// Try to run the program without error
-		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
 // run coordinates the execution of the remaining functions
-func run(filename string) error {
+func run(filename string, out io.Writer) error {
 	// Parse the input file for any errors
 	input, err := os.ReadFile(filename)
 	if err != nil {
@@ -70,9 +70,21 @@ func run(filename string) error {
 	}
 	// Convert the input to HTML data
 	htmlData := parseContent(input)
-	// Create filename for the output
-	outName := fmt.Sprintf("%s.html", filepath.Base(filename))
-	fmt.Println(outName)
+	// Create a temporary file to prevent garbage
+	temp, err := os.CreateTemp("", "mdp*.html")
+	// Check for errors
+	if err != nil {
+		return err
+	}
+	if err := temp.Close(); err != nil {
+		return err
+	}
+
+	outName := temp.Name()
+
+	// Print the outName to stdout for clarity and testing
+	fmt.Fprintln(out, outName)
+
 	return saveHTML(outName, htmlData)
 }
 

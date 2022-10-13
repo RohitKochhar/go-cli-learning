@@ -8,12 +8,12 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 	"testing"
 )
 
 const (
 	inputFile  = "./testdata/test1.md"
-	resultFile = "test1.md.html"
 	goldenFile = "./testdata/test1.md.html"
 )
 
@@ -39,12 +39,18 @@ func TestParseContent(t *testing.T) {
 
 // TestRun checks the bytes between result and golden
 func TestRun(t *testing.T) {
-	if err := run(inputFile); err != nil {
+	// Create a mock stdout pipe for testing
+	var mockStdOut bytes.Buffer
+
+	if err := run(inputFile, &mockStdOut); err != nil {
 		t.Fatal(err)
 	}
 
+	resultFile := strings.TrimSpace(mockStdOut.String())
+
 	result, err := os.ReadFile(resultFile)
 	if err != nil {
+		fmt.Println(mockStdOut.String())
 		t.Fatal(err)
 	}
 
@@ -63,10 +69,14 @@ func TestRun(t *testing.T) {
 
 // TestShaHash checks the sha hash between result and golden
 func TestShaHash(t *testing.T) {
-	// Try to generate the HTML without error
-	if err := run(inputFile); err != nil {
+	// Create a mock stdout pipe for testing
+	var mockStdOut bytes.Buffer
+
+	if err := run(inputFile, &mockStdOut); err != nil {
 		t.Fatal(err)
 	}
+
+	resultFile := strings.TrimSpace(mockStdOut.String())
 	// Store the result file into a variable for sha256 hash
 	result, err := os.Open(resultFile)
 	if err != nil {
