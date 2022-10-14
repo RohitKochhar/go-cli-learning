@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // filterOut evaluates some metadata about the file or directory
@@ -25,4 +26,13 @@ func filterOut(path, ext string, minSize int64, info os.FileInfo) bool {
 func listFile(path string, out io.Writer) error {
 	_, err := fmt.Fprintln(out, path)
 	return err
+}
+
+func delFile(path string) error {
+	splitPath := strings.Split(path, "/")
+	if splitPath[0] == "tmp" || (splitPath[0] == "." && splitPath[1] == "tmp") {
+		return os.Remove(path)
+	} else {
+		return fmt.Errorf("cannot delete non-temp files: %s", path)
+	}
 }

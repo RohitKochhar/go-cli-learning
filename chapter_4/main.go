@@ -18,6 +18,8 @@ type config struct {
 	size int64
 	// List files
 	list bool
+	// delete files
+	del bool
 }
 
 func main() {
@@ -35,6 +37,7 @@ func main() {
 	root := flag.String("root", ".", "Root directory to being search in")
 	// Action flags
 	list := flag.Bool("list", false, "List files only")
+	del := flag.Bool("del", false, "Delete files")
 	// Filter flags
 	ext := flag.String("ext", "", "File extensions to filter out")
 	size := flag.Int64("size", 0, "Minimum file size")
@@ -44,6 +47,7 @@ func main() {
 		ext:  *ext,
 		size: *size,
 		list: *list,
+		del:  *del,
 	}
 	// Call run
 	if err := run(*root, os.Stdout, c); err != nil {
@@ -69,6 +73,9 @@ func run(root string, out io.Writer, conf config) error {
 			// If list was set, just return the listed files
 			if conf.list {
 				return listFile(path, out)
+			}
+			if conf.del {
+				return delFile(path)
 			}
 			// By default, just list the files
 			return listFile(path, out)
