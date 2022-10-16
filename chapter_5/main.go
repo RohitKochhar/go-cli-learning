@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sync"
 )
 
 // main will parse the command-line arguments and call the run function
@@ -54,28 +55,61 @@ func run(filenames []string, op string, column int, out io.Writer) error {
 	}
 	// consolidates the data that is extracted from the given column on each input file
 	consolidate := make([]float64, 0)
+	// Create channels to receive results or errors of operations
+	resCh := make(chan []float64)
+	errCh := make(chan error)
+	// doneCh uses an empty struct since the channel doesn't need to send any data
+	// this is the go equivalent of a None type, and ensures the program doesn't
+	// allocate any memory for the channel
+	doneCh := make(chan struct{})
+	// Create a waitgroup to coordinate goroutine execution
+	wg := sync.WaitGroup{}
 	// Iterate through each input file
 	for _, fname := range filenames {
-		// Open the file for reading
-		f, err := os.Open(fname)
-		if err != nil {
-			return fmt.Errorf("Cannot open file: %w", err)
-		}
-		// Parse the CSV into a slice of float64 numbers
-		data, err := csv2float(f, column)
-		if err != nil {
-			return err
-		}
-		// Try to close the file
-		if err := f.Close(); err != nil {
-			return err
-		}
-		// Append the new data to consolidate
-		consolidate = append(consolidate, data...)
+		// Increment the number of items in the waitGroup
+		wg.Add(1)
+		// Create an anonymous function that takes fname
+		go func(fname string) {
+			// Once the anon func is done, trigger the wg.Done method
+			defer wg.Done()
+			// Open the file for reading
+			f, err := os.Open(fname)
+			if err != nil {
+				errCh <- fmt.Errorf("Cannot open file: %w", err)
+				return
+			}
+			// Parse the CSV into a slice of float64 numbers
+			data, err := csv2float(f, column)
+			if err != nil {
+				errCh <- err
+			}
+			// Try to close the file
+			if err := f.Close(); err != nil {
+				errCh <- err
+			}
+			// By using a channel, we mitigate the risk of a race condition
+			resCh <- data
+		}(fname)
 	}
-	// Execute the specified operation for all input files
-	_, err := fmt.Fprintln(out, opFunc(consolidate))
-	return err
+
+	go func() {
+		wg.Wait()
+		close(doneCh)
+	}()
+
+	// Consolidate the results coming from the resCh into the consolidate var
+	for {
+		select {
+		case err := <-errCh:
+			return err
+		case data := <-resCh:
+			consolidate = append(consolidate, data...)
+		case <-doneCh:
+			_, err := fmt.Fprintln(out, opFunc(consolidate))
+			return err
+		}
+
+	}
 }
 
 // validateFlags checks the user provided parameters
