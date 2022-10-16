@@ -35,17 +35,32 @@ func csv2float(r io.Reader, column int) ([]float64, error) {
 	cr := csv.NewReader(r)
 	// Adjust the column index so that users can start counting at 1 rather than 0
 	column--
-	// Use cr.ReadAll to read in the entire CSV data into a variable
-	allData, err := cr.ReadAll()
-	// Check for errors
-	if err != nil {
-		// Wrap the original err message with additional info
-		return nil, fmt.Errorf("Cannot read data from file: %w", err)
-	}
 	// Create a var to hold the results of the csv converstion
 	var data []float64
-	// Loop through allData variable
-	for i, row := range allData {
+	// Benchmarking improvement 1 -----------------------------
+	// --------- Old: (5043294)
+	// // Use cr.ReadAll to read in the entire CSV data into a variable
+	// allData, err := cr.ReadAll()
+	// // Check for errors
+	// if err != nil {
+	// 	// Wrap the original err message with additional info
+	// 	return nil, fmt.Errorf("Cannot read data from file: %w", err)
+	// }
+
+	// // Loop through allData variable
+	// for i, row := range allData {
+	// --------- New: (2529282)
+	// Run an infinite loop to read CSV until EOF is reached
+	cr.ReuseRecord = true
+	for i := 0; ; i++ {
+		row, err := cr.Read()
+		if err == io.EOF {
+			// If EOF, terminate loop
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("Cannot read data from file: %w", err)
+		}
 		if i == 0 {
 			// 0th column contains metadata, skip
 			continue

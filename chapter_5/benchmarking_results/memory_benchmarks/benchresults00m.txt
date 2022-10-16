@@ -1,0 +1,6 @@
+goos: darwin
+goarch: arm64
+pkg: rohitsingh/colstats
+BenchmarkRun-8   	      10	 613107604 ns/op	535700634 B/op	 5043294 allocs/op
+PASS
+ok  	rohitsingh/colstats	7.181s

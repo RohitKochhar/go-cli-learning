@@ -19,3 +19,5 @@ chapter_3/mdp
 
 */tmp/*
 chapter_5/colstats
+chapter_5/testdata/benchmark/*
+*.pprof

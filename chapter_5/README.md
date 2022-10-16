@@ -7,6 +7,7 @@
   - The program will receive two optional input parameters:
     1. `-col`: The column on which to execute the operation (defaults to 1)
     2. `-op`: The operation to execute on the selected column, either sum or average.
+- Here, we make use of go's benchmarking and profiling tools to optimize our tool and reduce the overall time it takes to run.
 
 ## Directory Structure
 ```
@@ -15,3 +16,4 @@
 ├── errors.go   // error definitions
 └── main.go     // main() and run() functions
 ```
+
