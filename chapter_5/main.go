@@ -45,7 +45,6 @@ func run(filenames []string, op string, column int, out io.Writer) error {
 	// Validate the user provided parameters
 	if err := validateFlags(filenames, op, column); err != nil {
 		return err
-		os.Exit(1)
 	}
 	switch op {
 	case "sum":
@@ -90,8 +89,12 @@ func validateFlags(filenames []string, op string, col int) error {
 		return ErrInvalidColumn
 	}
 	// Check that a valid operation was given
-	if op != "sum" || op != "avg" {
+	switch op {
+	case "sum":
+		return nil
+	case "avg":
+		return nil
+	default:
 		return fmt.Errorf("%w: %s", ErrInvalidOperation, op)
 	}
-	return nil
 }

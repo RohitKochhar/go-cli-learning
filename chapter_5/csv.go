@@ -40,7 +40,7 @@ func csv2float(r io.Reader, column int) ([]float64, error) {
 	// Check for errors
 	if err != nil {
 		// Wrap the original err message with additional info
-		return nil, fmt.Errorf("Cannot read data from file :%w", err)
+		return nil, fmt.Errorf("Cannot read data from file: %w", err)
 	}
 	// Create a var to hold the results of the csv converstion
 	var data []float64
