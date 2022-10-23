@@ -6,16 +6,14 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"time"
 )
 
 // config type holds flag information
 type config struct {
-	proj      string
-	test      bool
-	format    bool
-	gitCommit string
-	readme    bool
+	proj   string
+	test   bool
+	format bool
+	readme bool
 }
 
 // executer interface specifies which execute function to use for a step
@@ -29,14 +27,13 @@ func main() {
 	proj := flag.String("p", "", "Project Directory")
 	test := flag.Bool("test", true, "Run go test -v")
 	format := flag.Bool("format", true, "Run go fmt")
-	gitCommit := flag.String("commit", "", "Run git commit -m {PROVIDED MESSAGE}")
 	readme := flag.Bool("readme", false, "Overwrite project with auto-generated README.md")
+
 	conf := config{
-		proj:      *proj,
-		test:      *test,
-		format:    *format,
-		gitCommit: *gitCommit,
-		readme:    *readme,
+		proj:   *proj,
+		test:   *test,
+		format: *format,
+		readme: *readme,
 	}
 	flag.Parse()
 	if err := run(conf, os.Stdout); err != nil {
@@ -93,18 +90,6 @@ func run(conf config, out io.Writer) error {
 				"goreadme: SUCCESS",
 				conf.proj,
 				[]string{"-c", "goreadme -types -variabless -functions -methods -recursive -factories -constants > ./README.md"},
-			),
-		)
-	}
-	if conf.gitCommit != "" {
-		pipeline = append(pipeline,
-			NewTimeoutStep(
-				"git commit",
-				"git",
-				"git commit: SUCCESS",
-				conf.proj,
-				[]string{"-m", conf.gitCommit},
-				10*time.Second,
 			),
 		)
 	}
