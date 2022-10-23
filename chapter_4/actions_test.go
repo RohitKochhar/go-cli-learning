@@ -57,7 +57,7 @@ func TestDelete(t *testing.T) {
 	}{
 		// Here we define each test
 		{"DeleteNonTempDir", "testdata/dir2", false, fmt.Errorf("cannot delete non-temp files: %s", "testdata/dir2").Error()},
-		{"DeleteTempDir", "testdata", true, ""},
+		// {"DeleteTempDir", "testdata", true, ""},
 		// {"FilterExtensionNoMatch", "testdata/dir.log", ".sh", 0, true},
 		// {"FilterExtensionSizeMatch", "testdata/dir.log", ".log", 10, false},
 		// {"FilterExtensionSizeNoMatch", "testdata/dir.log", ".log", 20, true},
