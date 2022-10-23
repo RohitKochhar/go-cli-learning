@@ -13,6 +13,7 @@ type config struct {
 	proj   string
 	test   bool
 	format bool
+	lint   bool
 	readme bool
 }
 
@@ -27,12 +28,14 @@ func main() {
 	proj := flag.String("p", "", "Project Directory")
 	test := flag.Bool("test", true, "Run go test -v")
 	format := flag.Bool("format", true, "Run go fmt")
+	lint := flag.Bool("lint", true, "Run golangci-lint run")
 	readme := flag.Bool("readme", false, "Overwrite project with auto-generated README.md")
 
 	conf := config{
 		proj:   *proj,
 		test:   *test,
 		format: *format,
+		lint:   *lint,
 		readme: *readme,
 	}
 	flag.Parse()
@@ -79,6 +82,17 @@ func run(conf config, out io.Writer) error {
 				"gofmt: SUCCESS",
 				conf.proj,
 				[]string{"-l", "."},
+			),
+		)
+	}
+	if conf.lint {
+		pipeline = append(pipeline,
+			NewStep(
+				"golangci-lint",
+				"golangci-lint",
+				"golangci-lint: SUCCESS",
+				conf.proj,
+				[]string{"run"},
 			),
 		)
 	}
