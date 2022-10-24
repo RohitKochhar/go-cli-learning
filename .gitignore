@@ -21,3 +21,5 @@ chapter_3/mdp
 chapter_5/colstats
 chapter_5/testdata/benchmark/*
 *.pprof
+chapter_7/pScan/pScan
+.gitignore

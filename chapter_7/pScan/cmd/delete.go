@@ -22,32 +22,56 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"fmt"
+	"io"
+	"os"
+	"rohitsingh/pScan/scan"
+
 	"github.com/spf13/cobra"
 )
 
-// hostsCmd represents the hosts command
-var hostsCmd = &cobra.Command{
-	Use:   "hosts",
-	Short: "Manage the hosts list",
-	Long: `Description:
-	Manages the hosts lists for pScan
-	
-	Add hosts with the add command
-	Delete hosts with the delete command
-	List hosts with the list command
-	`,
+// deleteCmd represents the delete command
+var deleteCmd = &cobra.Command{
+	Use:     "delete <host1> ... <hostn>",
+	Short:   "Delete host(s) from the list of hosts to be scanned",
+	Aliases: []string{"d"},
+	Args:    cobra.MinimumNArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		hostsFile, err := cmd.Flags().GetString("hosts-file")
+		if err != nil {
+			return err
+		}
+		return deleteAction(os.Stdout, hostsFile, args)
+	},
 }
 
 func init() {
-	rootCmd.AddCommand(hostsCmd)
+	hostsCmd.AddCommand(deleteCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// hostsCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// deleteCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// hostsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// deleteCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+// deleteAction links the HostList.delete command when the delete cli command is called
+func deleteAction(out io.Writer, hostsFile string, args []string) error {
+	hl := &scan.HostsList{}
+	// See if we can load from the provided hostslist file
+	if err := hl.Load(hostsFile); err != nil {
+		return err
+	}
+	// List the hosts by iterating through the list
+	for _, h := range args {
+		if err := hl.Remove(h); err != nil {
+			return err
+		}
+		fmt.Fprintln(out, "Deleted host:", h)
+	}
+	return hl.Save(hostsFile)
 }

@@ -22,32 +22,56 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"fmt"
+	"io"
+	"os"
+	"rohitsingh/pScan/scan"
+
 	"github.com/spf13/cobra"
 )
 
-// hostsCmd represents the hosts command
-var hostsCmd = &cobra.Command{
-	Use:   "hosts",
-	Short: "Manage the hosts list",
-	Long: `Description:
-	Manages the hosts lists for pScan
-	
-	Add hosts with the add command
-	Delete hosts with the delete command
-	List hosts with the list command
-	`,
+// addCmd represents the add command
+var addCmd = &cobra.Command{
+	Short:   "Adds host(s) to the list to be scanned",
+	Use:     "add <host1> ... <hostn>",
+	Aliases: []string{"a"},
+	Args:    cobra.MinimumNArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		hostsFile, err := cmd.Flags().GetString("hosts-file")
+		if err != nil {
+			return err
+		}
+		return addAction(os.Stdout, hostsFile, args)
+	},
 }
 
 func init() {
-	rootCmd.AddCommand(hostsCmd)
+	hostsCmd.AddCommand(addCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// hostsCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// addCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// hostsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// addCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+// addAction links the call to add to the HostList.add method
+func addAction(out io.Writer, hostsFile string, args []string) error {
+	hl := &scan.HostsList{}
+	// See if we can load from the provided hostslist file
+	if err := hl.Load(hostsFile); err != nil {
+		return err
+	}
+	// List the hosts by iterating through the list
+	for _, h := range args {
+		if err := hl.Add(h); err != nil {
+			return err
+		}
+		fmt.Fprintln(out, "Added host:", h)
+	}
+	return hl.Save(hostsFile)
 }
