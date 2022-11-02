@@ -2,4 +2,6 @@ module rohitsingh/apis/todoServer
 
 go 1.19
 
-replace rohitsingh/todo => ../../chapter_2
+require todo v0.0.0
+
+replace todo => ../../chapter_2
