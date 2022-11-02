@@ -9,3 +9,4 @@ Code and notes referencing book "Powerful Command Line Applications in Go" by Ge
 - [Chapter 5: Improving Tool Performance](chapter_5/README.md)
 - [Chapter 6: Controlling Processes](chapter_6/README.md)
 - [Chapter 7: Using the Cobra CLI Framework](chapter_7/README.md)
+- [Chapter 8: Talking to REST APIs](chapter_8/README.md)
