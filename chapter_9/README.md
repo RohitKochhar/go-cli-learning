@@ -25,4 +25,18 @@
 - Termdash is a good option because it's cross-platform, under active development and has a good set of features like graphical widgets, dashboard resizing, customizable layouts and handling of mouse and keyboard events.
 - Termdash requires a set of other libraries to run as backend, so some additional libraries must be added to the project.
 
+## Organizing the Interface's Layout
+- Once all the widgets have been defined, they need to be organized and laid out logically to compose the user interface.
+- In Termdash, the layout is defined using containers represented by the type `container.Container`. Termdash requires at least one container to start the application, but multiple containers can be used to split the screen and organize the widgets.
+- Containers can be created in two different ways:
+  - Using the container package to split containers resulting in a binary tree layout
+  - Using the grid package to define a grid of rows and columns
+- For this application, we use the latter approach as it is easier to organize the code to compose the layout that we desire.
 
+## Building the Interactive Interface
+- Once the widgets and layout is ready, we can put everything together to create an app that launches and manages the interface.
+- Termdash provides two ways to run dashboard applications:
+  - `termdash.Run()`: Starts and manages the application automatically.
+    - Using this function, Termdash periodically redraws the screen and handles resizing
+  - `termdash.NewController()`: Creates a new instance of `termdash.Controller` that allows for manual management of redrawing and resizing processes.
+- Although the first choice is easier, the periodic screen draw continuously consumes system resources, so for this application we will use the second option.
