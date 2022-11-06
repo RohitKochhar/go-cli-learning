@@ -69,7 +69,7 @@ func NewConfig(repo Repository, pomodoro, shortBreak, longBreak time.Duration) *
 		repo:               repo,
 		PomodoroDuration:   25 * time.Minute,
 		ShortBreakDuration: 5 * time.Minute,
-		LongBreakDuration:  1 * time.Minute,
+		LongBreakDuration:  15 * time.Minute,
 	}
 	// Check if non-default values were specified, if they were, set the config values accordingly
 	if pomodoro > 0 {

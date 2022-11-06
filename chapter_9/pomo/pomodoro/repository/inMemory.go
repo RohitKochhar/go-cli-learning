@@ -26,8 +26,8 @@ func (r *inMemoryRepo) Create(i pomodoro.Interval) (int64, error) {
 	r.Lock()
 	defer r.Unlock()
 	// Place the new object at the end of the memory array and get it's ID
+	i.ID = int64(len(r.intervals) + 1)
 	r.intervals = append(r.intervals, i)
-	i.ID = int64(len(r.intervals))
 	return i.ID, nil
 }
 
