@@ -19,3 +19,10 @@
     1. An interface that specifies all the methods a given type must implement to qualify as a repository for this application
     2. A custom type which implements that interface working as the repository.
 - Our implemented repositories will be stored in `pomo/pomodoro/repository/`
+
+## Building the Interface Widgets
+- We will create the basic interface that has the controls required to run and display the Pomodoro status using the [Termdash](https://github.com/mum4k/termdash) dashboard library
+- Termdash is a good option because it's cross-platform, under active development and has a good set of features like graphical widgets, dashboard resizing, customizable layouts and handling of mouse and keyboard events.
+- Termdash requires a set of other libraries to run as backend, so some additional libraries must be added to the project.
+
+
