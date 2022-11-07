@@ -1,6 +1,8 @@
 # go-cli-learning
 Code and notes referencing book "Powerful Command Line Applications in Go" by Gerardi
 
+The first 4 chapters are pretty boring and more for learning Go, but the following chapters are really interesting and build quite cool apps.
+
 ## Table of Contents
 - [Chapter 1: Your First Command-Line Program in Go](chapter_1/README.md)
 - [Chapter 2: Interacting with Your Users](chapter_2/README.md)
